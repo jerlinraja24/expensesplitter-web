@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ExpenseSplitter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f8f9ff; --soft: #eff4ff; --card: #ffffff; --ink: #0b1c30; --ink2: #3e4a3d; --muted: #6b766a;
+    --primary: #006b2c; --primary-dark: #005a25; --tint: rgba(98, 223, 125, 0.3);
+    --danger: #ba1a1a; --danger-bg: #ffdad6; --ok-bg: #e6f6f0;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --lift: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  header.top { background: #fff; border-bottom: 1px solid #e5eeff; position: sticky; top: 0; z-index: 10; }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 12px; }
+  .brand { font-weight: 800; font-size: 17px; }
+  .brand span { color: var(--primary); }
+  .userbox { display: flex; align-items: center; gap: 10px; }
+  .btn { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: inherit; }
+  .btn-p { background: var(--primary); color: #fff; }
+  .btn-p:hover { background: var(--primary-dark); }
+  .btn-w { background: #fff; color: var(--ink); box-shadow: var(--shadow); }
+  .btn-w:hover { background: var(--soft); }
+  .btn-d { background: var(--danger); color: #fff; }
+  .btn-s { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .card { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+  .card h2, .card h3 { margin: 0 0 12px; font-size: 17px; }
+  .section-title { font-size: 17px; margin: 18px 0 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--ink2); margin-bottom: 4px; }
+  input, select { width: 100%; padding: 10px 12px; border: 0; border-radius: 8px; background: #fff; box-shadow: var(--shadow); font: inherit; color: var(--ink); }
+  input:focus, select:focus { outline: 2px solid var(--primary); }
+  .field { margin-bottom: 10px; }
+  .err { color: var(--danger); font-size: 12px; min-height: 0; }
+  .notice { padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
+  .notice.ok { background: var(--ok-bg); color: #00573f; }
+  .notice.bad { background: var(--danger-bg); color: #93000a; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--soft); padding: 4px; border-radius: 10px; margin-bottom: 14px; }
+  .tabs button { border: 0; background: transparent; padding: 8px; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: inherit; color: var(--ink2); }
+  .tabs button.on { background: #fff; color: var(--primary); box-shadow: var(--shadow); }
+  .trip-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .trip-card { cursor: pointer; border: 0; text-align: left; background: #fff; border-radius: 14px; padding: 16px; box-shadow: var(--shadow); font-family: inherit; color: var(--ink); }
+  .trip-card:hover { box-shadow: var(--lift); }
+  .muted { color: var(--muted); font-size: 12px; }
+  .big { font-size: 20px; font-weight: 800; }
+  .row-flex { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid #e5eeff; text-align: left; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--ink2); background: var(--soft); }
+  .r { text-align: right; }
+  .day { margin-bottom: 14px; }
+  .day-head { display: flex; justify-content: space-between; background: var(--soft); padding: 8px 12px; border-radius: 8px; font-weight: 700; }
+  .actions button { margin-left: 4px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .checks label { display: inline-flex; align-items: center; gap: 6px; background: var(--soft); padding: 6px 10px; border-radius: 8px; margin: 0; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .checks input { width: auto; box-shadow: none; }
+  .hidden { display: none !important; }
+  .pos { color: var(--primary); font-weight: 700; }
+  .neg { color: var(--danger); font-weight: 700; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px 0 40px; }
+  @media (max-width: 760px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Expense<span>Splitter</span></div>
+    <div class="userbox hidden" id="userBox">
+      <span class="muted" id="userName"></span>
+      <button class="btn btn-w btn-s" id="signOutBtn">Sign Out</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="notice" class="notice hidden"></div>
+
+  <!-- ============ SIGN IN / CREATE ACCOUNT ============ -->
+  <section id="authView" class="hidden" style="max-width: 420px; margin: 40px auto;">
+    <div class="card">
+      <div class="tabs">
+        <button id="tabSignIn" class="on">Sign In</button>
+        <button id="tabRegister">Create Account</button>
+      </div>
+      <form id="authForm" novalidate>
+        <div class="field hidden" id="nameField">
+          <label for="authName">Name</label>
+          <input id="authName" maxlength="60" autocomplete="name" />
+          <div class="err" id="errName"></div>
+        </div>
+        <div class="field">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" maxlength="254" autocomplete="email" />
+          <div class="err" id="errEmail"></div>
+        </div>
+        <div class="field">
+          <label for="authPassword">Password</label>
+          <input id="authPassword" type="password" autocomplete="current-password" />
+          <div class="err" id="errPassword"></div>
+        </div>
+        <button class="btn btn-p" id="authSubmit" type="submit" style="width: 100%;">Sign In</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ TRIPS ============ -->
+  <section id="tripsView" class="hidden">
+    <div class="card">
+      <h2>New Trip</h2>
+      <form id="tripForm" novalidate>
+        <div class="grid3">
+          <div class="field">
+            <label for="tripName">Trip name</label>
+            <input id="tripName" maxlength="100" placeholder="e.g. Goa weekend" />
+            <div class="err" id="errTripName"></div>
+          </div>
+          <div class="field">
+            <label for="tripStart">Start date (optional)</label>
+            <input id="tripStart" type="date" />
+          </div>
+          <div class="field">
+            <label for="tripEnd">End date (optional)</label>
+            <input id="tripEnd" type="date" />
+            <div class="err" id="errTripDates"></div>
+          </div>
+        </div>
+        <button class="btn btn-p" id="tripSubmit" type="submit">Create Trip</button>
+      </form>
+    </div>
+
+    <h2 class="section-title">Your trips</h2>
+    <div id="tripList" class="trip-list"></div>
+    <p id="noTrips" class="muted hidden">No trips yet. Create your first trip above.</p>
+  </section>
+
+  <!-- ============ TRIP PAGE ============ -->
+  <section id="tripView" class="hidden">
+    <button class="btn btn-w btn-s" id="backBtn" style="margin-bottom: 12px;">&larr; All trips</button>
+
+    <div class="card row-flex">
+      <div>
+        <div class="big" id="tripTitle"></div>
+        <div class="muted" id="tripDates"></div>
+      </div>
+      <button class="btn btn-d btn-s" id="deleteTripBtn">Delete trip</button>
+    </div>
+
+    <div class="grid2">
+      <!-- People -->
+      <div class="card">
+        <h3>People and money given</h3>
+        <form id="memberForm" novalidate>
+          <div class="grid2">
+            <div class="field">
+              <label for="memberName">Name</label>
+              <input id="memberName" maxlength="60" />
+              <div class="err" id="errMemberName"></div>
+            </div>
+            <div class="field">
+              <label for="memberMoney">Money given (₹)</label>
+              <input id="memberMoney" type="number" min="0" step="0.01" />
+              <div class="err" id="errMemberMoney"></div>
+            </div>
+          </div>
+          <button class="btn btn-p btn-s" id="memberSubmit" type="submit">Add Person</button>
+        </form>
+        <table style="margin-top: 12px;">
+          <thead><tr><th>Name</th><th class="r">Money given</th><th></th></tr></thead>
+          <tbody id="memberRows"></tbody>
+        </table>
+      </div>
+
+      <!-- Add expense -->
+      <div class="card">
+        <h3 id="expenseFormTitle">Add expense</h3>
+        <form id="expenseForm" novalidate>
+          <div class="grid2">
+            <div class="field">
+              <label for="expDate">Date</label>
+              <input id="expDate" type="date" />
+              <div class="err" id="errExpDate"></div>
+            </div>
+            <div class="field">
+              <label for="expCategory">Category</label>
+              <select id="expCategory"></select>
+            </div>
+            <div class="field">
+              <label for="expAmount">Amount (₹)</label>
+              <input id="expAmount" type="number" min="0" step="0.01" />
+              <div class="err" id="errExpAmount"></div>
+            </div>
+            <div class="field">
+              <label for="expDesc">Description (optional)</label>
+              <input id="expDesc" maxlength="200" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Who shares this expense? (equal split)</label>
+            <div class="checks" id="expPeople"></div>
+            <div class="err" id="errExpPeople"></div>
+          </div>
+          <button class="btn btn-p" id="expenseSubmit" type="submit">Save Expense</button>
+          <button class="btn btn-w hidden" id="expenseCancel" type="button">Cancel edit</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Expenses by day -->
+    <div class="card">
+      <h3>Expenses by day</h3>
+      <div id="days"></div>
+      <p id="noExpenses" class="muted hidden">No expenses yet.</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+      <h3>Summary</h3>
+      <div class="muted">Total spent</div>
+      <div class="big" id="totalSpent">₹0</div>
+      <table style="margin-top: 10px;">
+        <thead>
+          <tr><th>Name</th><th class="r">Money given</th><th class="r">Share of spending</th><th class="r">Balance</th></tr>
+        </thead>
+        <tbody id="summaryRows"></tbody>
+      </table>
+      <p class="muted" style="margin-top: 8px;">Balance = money given minus share. Positive: gets money back. Negative: owes money.</p>
+    </div>
+  </section>
+</main>
+
+<footer>ExpenseSplitter &middot; Your data is stored in your MySQL database.</footer>
+
+<script>
+  // ================= CONFIGURATION =================
+  const API_URL = "https://expensesplitter-api2.onrender.com";
+  const CATEGORIES = ["Food & Dining", "Transport", "Stay", "Shopping", "Entertainment", "Other"];
+  const SESSION_KEY = "expensesplitter.session";
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // ================= HELPERS =================
+  const $ = id => document.getElementById(id);
+  const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const money = v => inr.format(Number(v) || 0);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const todayYmd = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  // ================= STATE =================
+  let session = { token: null, user: null };
+  let authMode = "signin";
+  let currentTripId = null;
+  let currentTrip = null;       // { trip, members, expenses, categories }
+  let editingExpenseId = null;
+
+  // ================= MESSAGES AND VIEWS =================
+  let noticeTimer = null;
+  function notify(message, type = "ok") {
+    const box = $("notice");
+    box.className = "notice " + (type === "ok" ? "ok" : "bad");
+    box.textContent = message;
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => box.classList.add("hidden"), 4000);
+  }
+
+  function showView(name) {
+    ["authView", "tripsView", "tripView"].forEach(id => $(id).classList.add("hidden"));
+    const map = { auth: "authView", trips: "tripsView", trip: "tripView" };
+    $(map[name]).classList.remove("hidden");
+  }
+
+  // ================= SESSION STORAGE =================
+  function saveSession() {
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) { /* storage blocked */ }
+  }
+  function loadSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (e) { return null; }
+  }
+  function clearLocalSession() {
+    session = { token: null, user: null };
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* storage blocked */ }
+    $("userBox").classList.add("hidden");
+    showView("auth");
+  }
+
+  // ================= API =================
+  async function api(method, path, body) {
+    const headers = {};
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+    if (session.token) headers["Authorization"] = "Bearer " + session.token;
+
+    let response;
+    try {
+      response = await fetch(API_URL + path, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined
+      });
+    } catch (e) {
+      throw new Error("Cannot reach the server. Check that the backend is running in Eclipse.");
+    }
+
+    let data = {};
+    try { data = await response.json(); } catch (e) { /* empty body */ }
+
+    if (!response.ok || data.success === false) {
+      if (response.status === 401 && session.token) {
+        clearLocalSession();
+      }
+      throw new Error(data.message || `Request failed (${response.status}).`);
+    }
+    return data;
+  }
+
+  // ================= SIGN IN / CREATE ACCOUNT =================
+  function setAuthMode(mode) {
+    authMode = mode;
+    $("tabSignIn").classList.toggle("on", mode === "signin");
+    $("tabRegister").classList.toggle("on", mode === "register");
+    $("nameField").classList.toggle("hidden", mode !== "register");
+    $("authSubmit").textContent = mode === "register" ? "Create Account" : "Sign In";
+    $("authPassword").autocomplete = mode === "register" ? "new-password" : "current-password";
+  }
+
+  function clearAuthErrors() {
+    ["errName", "errEmail", "errPassword"].forEach(id => $(id).textContent = "");
+  }
+
+  $("tabSignIn").onclick = () => setAuthMode("signin");
+  $("tabRegister").onclick = () => setAuthMode("register");
+
+  $("authForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    clearAuthErrors();
+    const name = $("authName").value.trim();
+    const email = $("authEmail").value.trim().toLowerCase();
+    const password = $("authPassword").value;
+
+    let valid = true;
+    if (authMode === "register" && (!name || name.length > 60)) {
+      $("errName").textContent = "Enter your name (up to 60 characters).";
+      valid = false;
+    }
+    if (!EMAIL_RE.test(email)) {
+      $("errEmail").textContent = "Enter a valid email address.";
+      valid = false;
+    }
+    if (password.length < 8) {
+      $("errPassword").textContent = "Password must be at least 8 characters.";
+      valid = false;
+    }
+    if (!valid) return;
+
+    $("authSubmit").disabled = true;
+    try {
+      const data = authMode === "register"
+        ? await api("POST", "/api/auth/register", { name, email, password })
+        : await api("POST", "/api/auth/login", { email, password });
+      session = { token: data.token, user: data.user };
+      saveSession();
+      $("authPassword").value = "";
+      startApp();
+    } catch (err) {
+      notify(err.message, "bad");
+    } finally {
+      $("authSubmit").disabled = false;
+    }
+  });
+
+  function startApp() {
+    $("userName").textContent = session.user ? session.user.name : "";
+    $("userBox").classList.remove("hidden");
+    showTrips();
+  }
+
+  $("signOutBtn").onclick = async () => {
+    try { await api("POST", "/api/auth/logout"); } catch (e) { /* session may already be gone */ }
+    clearLocalSession();
+    notify("You have signed out.");
+  };
+
+  // ================= TRIPS LIST =================
+  async function showTrips() {
+    showView("trips");
+    await loadTrips();
+  }
+
+  async function loadTrips() {
+    try {
+      const data = await api("GET", "/api/trips");
+      $("tripList").innerHTML = data.trips.map(t => `
+        <button class="trip-card" data-id="${t.id}">
+          <div class="big">${esc(t.name)}</div>
+          <div class="muted">${t.startDate ? esc(t.startDate) : "No start date"}${t.endDate ? " to " + esc(t.endDate) : ""}</div>
+          <div class="row-flex" style="margin-top: 10px;">
+            <span>${t.memberCount} ${t.memberCount === 1 ? "person" : "people"}</span>
+            <b>${money(t.totalSpent)}</b>
+          </div>
+        </button>`).join("");
+      $("noTrips").classList.toggle("hidden", data.trips.length > 0);
+      $("tripList").querySelectorAll(".trip-card").forEach(btn => {
+        btn.onclick = () => openTrip(btn.dataset.id);
+      });
+    } catch (err) {
+      notify(err.message, "bad");
+    }
+  }
+
+  $("tripForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("errTripName").textContent = "";
+    $("errTripDates").textContent = "";
+    const name = $("tripName").value.trim();
+    const startDate = $("tripStart").value || null;
+    const endDate = $("tripEnd").value || null;
+
+    if (!name || name.length > 100) {
+      $("errTripName").textContent = "Trip name is required (up to 100 characters).";
+      return;
+    }
+    if (startDate && endDate && endDate < startDate) {
+      $("errTripDates").textContent = "End date must be on or after the start date.";
+      return;
+    }
+
+    $("tripSubmit").disabled = true;
+    try {
+      await api("POST", "/api/trips", { name, startDate, endDate });
+      $("tripName").value = "";
+      $("tripStart").value = "";
+      $("tripEnd").value = "";
+      notify("Trip created.");
+      await loadTrips();
+    } catch (err) {
+      notify(err.message, "bad");
+    } finally {
+      $("tripSubmit").disabled = false;
+    }
+  });
+
+  // ================= TRIP PAGE =================
+  async function openTrip(id) {
+    currentTripId = id;
+    editingExpenseId = null;
+    resetExpenseForm();
+    showView("trip");
+    await loadTrip();
+  }
+
+  async function loadTrip() {
+    try {
+      const [detail, summary] = await Promise.all([
+        api("GET", `/api/trips/${currentTripId}`),
+        api("GET", `/api/trips/${currentTripId}/summary`)
+      ]);
+      currentTrip = detail;
+      renderTrip(detail, summary);
+    } catch (err) {
+      notify(err.message, "bad");
+      if (!session.token) return;
+      showTrips();
+    }
+  }
+
+  function renderTrip(detail, summary) {
+    const t = detail.trip;
+    $("tripTitle").textContent = t.name;
+    $("tripDates").textContent = (t.startDate || t.endDate)
+      ? `${t.startDate || "?"} to ${t.endDate || "?"}`
+      : "No dates set";
+
+    // People
+    $("memberRows").innerHTML = detail.members.length
+      ? detail.members.map(m => `
+          <tr>
+            <td>${esc(m.name)}</td>
+            <td class="r">${money(m.moneyGiven)}</td>
+            <td class="r"><button class="btn btn-w btn-s" data-del-member="${m.id}">Remove</button></td>
+          </tr>`).join("")
+      : `<tr><td colspan="3" class="muted">No people yet. Add the people who are travelling.</td></tr>`;
+
+    // Checkboxes for expense sharing (keep what the user already ticked)
+    const ticked = new Set([...document.querySelectorAll("#expPeople input:checked")].map(i => String(i.value)));
+    $("expPeople").innerHTML = detail.members.length
+      ? detail.members.map(m => `
+          <label><input type="checkbox" value="${m.id}" ${ticked.has(String(m.id)) ? "checked" : ""} /> ${esc(m.name)}</label>`).join("")
+      : `<span class="muted">Add people first.</span>`;
+
+    // Expenses grouped by day
+    const groups = {};
+    detail.expenses.forEach(e => {
+      (groups[e.date] = groups[e.date] || []).push(e);
+    });
+    const dayKeys = Object.keys(groups).sort().reverse();
+    $("days").innerHTML = dayKeys.map(date => {
+      const items = groups[date];
+      const dayTotal = items.reduce((sum, e) => sum + Number(e.amount), 0);
+      const rows = items.map(e => {
+        const names = e.memberIds
+          .map(id => (detail.members.find(m => m.id === id) || { name: "?" }).name)
+          .join(", ");
+        return `
+          <tr>
+            <td><b>${esc(e.category)}</b><div class="muted">${esc(e.description)}</div></td>
+            <td>${esc(names)}</td>
+            <td class="r">${money(e.amount)}</td>
+            <td class="r actions">
+              <button class="btn btn-w btn-s" data-edit-expense="${e.id}">Edit</button>
+              <button class="btn btn-d btn-s" data-del-expense="${e.id}">Delete</button>
+            </td>
+          </tr>`;
+      }).join("");
+      return `
+        <div class="day">
+          <div class="day-head"><span>${esc(date)}</span><span>${money(dayTotal)}</span></div>
+          <table><tbody>${rows}</tbody></table>
+        </div>`;
+    }).join("");
+    $("noExpenses").classList.toggle("hidden", detail.expenses.length > 0);
+
+    // Summary
+    $("totalSpent").textContent = money(summary.totalSpent);
+    $("summaryRows").innerHTML = summary.people.length
+      ? summary.people.map(p => `
+          <tr>
+            <td>${esc(p.name)}</td>
+            <td class="r">${money(p.moneyGiven)}</td>
+            <td class="r">${money(p.spent)}</td>
+            <td class="r ${Number(p.balance) < 0 ? "neg" : "pos"}">${money(p.balance)}</td>
+          </tr>`).join("")
+      : `<tr><td colspan="4" class="muted">Add people to see the summary.</td></tr>`;
+  }
+
+  $("backBtn").onclick = () => showTrips();
+
+  $("deleteTripBtn").onclick = async () => {
+    if (!confirm("Delete this trip with all its people and expenses?")) return;
+    try {
+      await api("DELETE", `/api/trips/${currentTripId}`);
+      notify("Trip deleted.");
+      showTrips();
+    } catch (err) {
+      notify(err.message, "bad");
+    }
+  };
+
+  // ---------- People ----------
+  $("memberForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("errMemberName").textContent = "";
+    $("errMemberMoney").textContent = "";
+    const name = $("memberName").value.trim();
+    const moneyValue = $("memberMoney").value || "0";
+    if (!name || name.length > 60) {
+      $("errMemberName").textContent = "Person name is required (up to 60 characters).";
+      return;
+    }
+    const n = Number(moneyValue);
+    if (!(n >= 0) || n > 10000000) {
+      $("errMemberMoney").textContent = "Enter an amount from 0 to 10,000,000.";
+      return;
+    }
+    $("memberSubmit").disabled = true;
+    try {
+      await api("POST", `/api/trips/${currentTripId}/members`, { name, moneyGiven: moneyValue });
+      $("memberName").value = "";
+      $("memberMoney").value = "";
+      notify("Person added.");
+      await loadTrip();
+    } catch (err) {
+      notify(err.message, "bad");
+    } finally {
+      $("memberSubmit").disabled = false;
+    }
+  });
+
+  $("memberRows").addEventListener("click", async e => {
+    const btn = e.target.closest("[data-del-member]");
+    if (!btn) return;
+    if (!confirm("Remove this person from the trip?")) return;
+    try {
+      await api("DELETE", `/api/trips/${currentTripId}/members/${btn.dataset.delMember}`);
+      notify("Person removed.");
+      await loadTrip();
+    } catch (err) {
+      notify(err.message, "bad");
+    }
+  });
+
+  // ---------- Expenses ----------
+  function resetExpenseForm() {
+    $("expDate").value = todayYmd();
+    $("expAmount").value = "";
+    $("expDesc").value = "";
+    $("expCategory").selectedIndex = 0;
+    document.querySelectorAll("#expPeople input").forEach(i => i.checked = false);
+    $("expenseFormTitle").textContent = "Add expense";
+    $("expenseSubmit").textContent = "Save Expense";
+    $("expenseCancel").classList.add("hidden");
+    ["errExpDate", "errExpAmount", "errExpPeople"].forEach(id => $(id).textContent = "");
+  }
+
+  $("expenseCancel").addEventListener("click", () => {
+    editingExpenseId = null;
+    resetExpenseForm();
+  });
+
+  $("expenseForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    ["errExpDate", "errExpAmount", "errExpPeople"].forEach(id => $(id).textContent = "");
+    const date = $("expDate").value;
+    const category = $("expCategory").value;
+    const amount = $("expAmount").value;
+    const description = $("expDesc").value.trim();
+    const memberIds = [...document.querySelectorAll("#expPeople input:checked")].map(i => Number(i.value));
+
+    let valid = true;
+    if (!date) {
+      $("errExpDate").textContent = "Choose a date.";
+      valid = false;
+    } else if (date > todayYmd()) {
+      $("errExpDate").textContent = "The date cannot be in the future.";
+      valid = false;
+    }
+    if (!amount || !(Number(amount) > 0)) {
+      $("errExpAmount").textContent = "Enter an amount greater than 0.";
+      valid = false;
+    }
+    if (memberIds.length === 0) {
+      $("errExpPeople").textContent = "Select at least one person.";
+      valid = false;
+    }
+    if (!valid) return;
+
+    const payload = { date, category, amount, description, memberIds };
+    $("expenseSubmit").disabled = true;
+    try {
+      if (editingExpenseId) {
+        await api("PUT", `/api/trips/${currentTripId}/expenses/${editingExpenseId}`, payload);
+        notify("Expense updated.");
+      } else {
+        await api("POST", `/api/trips/${currentTripId}/expenses`, payload);
+        notify("Expense saved.");
+      }
+      editingExpenseId = null;
+      resetExpenseForm();
+      await loadTrip();
+    } catch (err) {
+      notify(err.message, "bad");
+    } finally {
+      $("expenseSubmit").disabled = false;
+    }
+  });
+
+  $("days").addEventListener("click", async e => {
+    const editBtn = e.target.closest("[data-edit-expense]");
+    const delBtn = e.target.closest("[data-del-expense]");
+
+    if (editBtn) {
+      const expense = currentTrip.expenses.find(x => String(x.id) === editBtn.dataset.editExpense);
+      if (!expense) return;
+      editingExpenseId = expense.id;
+      $("expDate").value = expense.date;
+      $("expCategory").value = expense.category;
+      $("expAmount").value = expense.amount;
+      $("expDesc").value = expense.description || "";
+      document.querySelectorAll("#expPeople input").forEach(i => {
+        i.checked = expense.memberIds.includes(Number(i.value));
+      });
+      $("expenseFormTitle").textContent = "Edit expense";
+      $("expenseSubmit").textContent = "Update Expense";
+      $("expenseCancel").classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (delBtn) {
+      if (!confirm("Delete this expense?")) return;
+      try {
+        await api("DELETE", `/api/trips/${currentTripId}/expenses/${delBtn.dataset.delExpense}`);
+        notify("Expense deleted.");
+        await loadTrip();
+      } catch (err) {
+        notify(err.message, "bad");
+      }
+    }
+  });
+
+  // ================= INIT =================
+  function init() {
+    $("expCategory").innerHTML = CATEGORIES.map(c => `<option>${esc(c)}</option>`).join("");
+    $("expDate").value = todayYmd();
+    $("expDate").max = todayYmd();
+    setAuthMode("signin");
+
+    const saved = loadSession();
+    if (saved && saved.token) {
+      session = saved;
+      startApp();
+    } else {
+      showView("auth");
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
